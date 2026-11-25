@@ -35,6 +35,7 @@ export default function HomePage() {
 
     try {
       sessionStorage.setItem(StorageKey.ACCESS_TOKEN, selected.token);
+      sessionStorage.setItem(StorageKey.USER_ID, selected.userId);
       sessionStorage.setItem(StorageKey.SESSION_ID, crypto.randomUUID());
     } catch {
       // sessionStorage pode falhar em modo privado / restrições do browser
@@ -116,7 +117,9 @@ export default function HomePage() {
             ))}
           </div>
 
-          <Button onClick={startConversation}>Iniciar conversa</Button>
+          <Button className="w-full" onClick={startConversation}>
+            Iniciar conversa
+          </Button>
 
           <p className="text-xs leading-4 text-text-muted">
             A identidade vem do token, nunca do texto enviado ao modelo.

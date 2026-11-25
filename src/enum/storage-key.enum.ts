@@ -5,6 +5,7 @@ export enum StorageKey {
 
   ACCESS_TOKEN = `${PREFIX}:access-token`,
   SESSION_ID = `${PREFIX}:session-id`,
+  USER_ID = `${PREFIX}:user-id`,
   USER_ACCESS = `${PREFIX}:user-access`,
   REMEMBER_LOGIN = `${PREFIX}:remember-login`,
 

@@ -16,3 +16,21 @@ export const MOCK_USERS: MockUser[] = [
     summary: "1 pedido · 22222 enviado",
   },
 ];
+
+export function getUserByToken(token: string): MockUser | undefined {
+  return MOCK_USERS.find((user) => user.token === token);
+}
+
+export function getUserById(userId: string): MockUser | undefined {
+  return MOCK_USERS.find((user) => user.userId === userId);
+}
+
+export function userInitials(userId: string) {
+  if (userId.endsWith("001")) {
+    return "C1";
+  }
+  if (userId.endsWith("002")) {
+    return "C2";
+  }
+  return userId.slice(0, 2).toUpperCase();
+}
