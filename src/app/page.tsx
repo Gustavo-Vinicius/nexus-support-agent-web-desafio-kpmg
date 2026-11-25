@@ -68,7 +68,7 @@ export default function HomePage() {
     <main className="relative min-h-screen overflow-hidden bg-primary">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-[380px] -right-[480px] h-[1100px] w-[1100px] rounded-full bg-white/[0.06]"
+        className="pointer-events-none absolute -top-[42vh] -right-[33vw] aspect-square w-[76vw] rounded-full bg-white/[0.06] sm:-top-[380px] sm:-right-[480px] sm:h-[1100px] sm:w-[1100px]"
       />
 
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center gap-5 px-4">
@@ -118,7 +118,7 @@ export default function HomePage() {
 
           <Button onClick={startConversation}>Iniciar conversa</Button>
 
-          <p className="text-center text-xs leading-4 text-text-muted">
+          <p className="text-xs leading-4 text-text-muted">
             A identidade vem do token, nunca do texto enviado ao modelo.
           </p>
         </section>
