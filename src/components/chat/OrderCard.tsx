@@ -12,7 +12,9 @@ const STATUS_MAP: Record<
 };
 
 function formatDate(value: string) {
-  const date = new Date(value);
+  const date = new Date(
+    value.includes("T") ? value : `${value}T12:00:00`,
+  );
   if (Number.isNaN(date.getTime())) {
     return value;
   }

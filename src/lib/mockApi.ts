@@ -1,3 +1,4 @@
+import { getMockOrder } from "@/lib/mockOrders";
 import type {
   ChatRequest,
   ChatSuccessResponse,
@@ -122,7 +123,7 @@ export async function mockChat(
   }
 
   if (message.includes("cancelar")) {
-    const orderId = "12345";
+    const order = getMockOrder("12345");
     return ok({
       reply:
         "Encontrei o pedido e ele ainda está dentro do prazo para cancelamento. Confirme se deseja seguir com a solicitação.",
@@ -130,7 +131,10 @@ export async function mockChat(
       toolCalls: [
         { name: "request_cancellation", latencyMs: 210, status: "pending" },
       ],
-      pendingAction: { type: "confirm_cancellation", orderId },
+      pendingAction: {
+        type: "confirm_cancellation",
+        orderId: order?.id ?? "12345",
+      },
     });
   }
 
@@ -150,7 +154,9 @@ export async function mockChat(
       });
     }
 
-    const date = new Date(order.estimatedDelivery).toLocaleDateString("pt-BR");
+    const date = new Date(`${order.estimatedDelivery}T12:00:00`).toLocaleDateString(
+      "pt-BR",
+    );
     return ok({
       reply: `A previsão de entrega do pedido #${order.id} é ${date}.`,
       order,
@@ -168,14 +174,10 @@ export async function mockChat(
     }
 
     if (isCustomer002) {
-      const order: Order = {
-        id: "22222",
-        status: "shipped",
-        estimatedDelivery: "2026-04-02",
-        total: 189.9,
-        canCancel: false,
-      };
-      ctx.lastOrder = order;
+      const order = getMockOrder("22222");
+      if (order) {
+        ctx.lastOrder = order;
+      }
       return ok({
         reply: "O pedido #22222 foi enviado e está a caminho.",
         order,
@@ -193,14 +195,10 @@ export async function mockChat(
       });
     }
 
-    const order: Order = {
-      id: "12345",
-      status: "delayed",
-      estimatedDelivery: "2026-03-28",
-      total: 349.9,
-      canCancel: true,
-    };
-    ctx.lastOrder = order;
+    const order = getMockOrder("12345");
+    if (order) {
+      ctx.lastOrder = order;
+    }
 
     return ok({
       reply:

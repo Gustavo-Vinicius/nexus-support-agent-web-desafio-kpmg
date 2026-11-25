@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import { ChatApiError, postChat } from "@/lib/api";
 import {
   loadMessages,
+  loadSessions,
   saveMessages,
   truncateTitle,
   upsertSession,
@@ -47,13 +48,17 @@ export function useChat({
   const [lastUserMessage, setLastUserMessage] = useState<string | null>(null);
 
   const persist = useCallback(
-    (nextMessages: ChatMessage[], titleSource?: string) => {
+    (nextMessages: ChatMessage[]) => {
       saveMessages(userId, sessionId, nextMessages);
 
-      const firstUser = nextMessages.find((message) => message.role === "user");
-      const title = truncateTitle(
-        titleSource ?? firstUser?.content ?? "Nova conversa",
+      const existing = loadSessions(userId).find(
+        (session) => session.sessionId === sessionId,
       );
+      const firstUser = nextMessages.find((message) => message.role === "user");
+      const title =
+        existing?.title && existing.title !== "Nova conversa"
+          ? existing.title
+          : truncateTitle(firstUser?.content ?? "Nova conversa");
 
       const sessions = upsertSession(userId, {
         sessionId,
@@ -84,7 +89,7 @@ export function useChat({
       const history = baseMessages ?? messages;
       const withUser = [...history, userMessage];
       setMessages(withUser);
-      persist(withUser, trimmed);
+      persist(withUser);
 
       try {
         const response = await postChat(
@@ -107,7 +112,7 @@ export function useChat({
 
         const next = [...withUser, assistantMessage];
         setMessages(next);
-        persist(next, trimmed);
+        persist(next);
       } catch (err) {
         const apiError =
           err instanceof ChatApiError
@@ -132,7 +137,7 @@ export function useChat({
 
         const next = [...withUser, errorMessage];
         setMessages(next);
-        persist(next, trimmed);
+        persist(next);
         setError(apiError.message);
       } finally {
         setIsLoading(false);

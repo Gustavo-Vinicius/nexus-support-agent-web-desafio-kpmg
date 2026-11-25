@@ -66,10 +66,20 @@ export function upsertSession(
   userId: string,
   session: ChatSessionSummary,
 ): ChatSessionSummary[] {
-  const sessions = loadSessions(userId).filter(
-    (item) => item.sessionId !== session.sessionId,
-  );
-  const next = [session, ...sessions];
+  const sessions = loadSessions(userId);
+  const existing = sessions.find((item) => item.sessionId === session.sessionId);
+  const lockedTitle =
+    existing?.title && existing.title !== "Nova conversa"
+      ? existing.title
+      : session.title;
+
+  const next = [
+    {
+      ...session,
+      title: lockedTitle,
+    },
+    ...sessions.filter((item) => item.sessionId !== session.sessionId),
+  ];
   saveSessions(userId, next);
   return next;
 }

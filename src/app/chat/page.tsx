@@ -22,7 +22,7 @@ import {
   getStoredUserId,
 } from "@/lib/api";
 import { getUserByToken } from "@/lib/mockUsers";
-import { loadSessions } from "@/lib/session-storage";
+import { loadSessions, truncateTitle } from "@/lib/session-storage";
 import type { ChatSessionSummary } from "@/lib/types";
 
 const emptySubscribe = () => () => {};
@@ -84,7 +84,9 @@ function ChatSessionView({
       return active.title;
     }
     const firstUser = messages.find((message) => message.role === "user");
-    return firstUser?.content.slice(0, 32) || "Nova conversa";
+    return firstUser
+      ? truncateTitle(firstUser.content)
+      : "Nova conversa";
   }, [messages, sessionId, sessions]);
 
   return (

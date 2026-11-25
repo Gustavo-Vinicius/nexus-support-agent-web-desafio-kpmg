@@ -3,7 +3,7 @@ import { Button } from "@/components/Button";
 import { Chip } from "@/components/chat/Chip";
 import { ConfirmationCard } from "@/components/chat/ConfirmationCard";
 import { OrderCard } from "@/components/chat/OrderCard";
-import type { ChatMessage } from "@/lib/types";
+import type { ChatMessage, ToolCall } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type AssistantMessageProps = {
@@ -14,6 +14,26 @@ type AssistantMessageProps = {
   confirming?: boolean;
 };
 
+function ToolCallChip({ tool }: { tool: ToolCall }) {
+  if (tool.status === "pending") {
+    return (
+      <Chip variant="warning">
+        {tool.name} · aguardando confirmação
+      </Chip>
+    );
+  }
+
+  if (tool.status === "error") {
+    return <Chip variant="danger">{tool.name} · erro</Chip>;
+  }
+
+  return (
+    <Chip variant="tool">
+      {tool.name} · {tool.latencyMs} ms
+    </Chip>
+  );
+}
+
 export function AssistantMessage({
   message,
   isError,
@@ -23,7 +43,7 @@ export function AssistantMessage({
 }: AssistantMessageProps) {
   return (
     <div className="flex items-start gap-3">
-      <AppIcon size={32} variant="light" />
+      <AppIcon size={32} variant="primary" />
       <div className="min-w-0 max-w-[620px] flex-1 space-y-2">
         <div
           className={cn(
@@ -46,6 +66,16 @@ export function AssistantMessage({
               onKeep={() => onConfirm?.(false)}
             />
           ) : null}
+
+          {isError && onRetry ? (
+            <Button
+              variant="secondary"
+              className="mt-3 w-auto"
+              onClick={onRetry}
+            >
+              Tentar novamente
+            </Button>
+          ) : null}
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -64,9 +94,10 @@ export function AssistantMessage({
             </Chip>
           ))}
           {message.toolCalls?.map((tool) => (
-            <Chip key={`${tool.name}-${tool.latencyMs}`} variant="tool">
-              {tool.name} · {tool.latencyMs} ms
-            </Chip>
+            <ToolCallChip
+              key={`${tool.name}-${tool.status}-${tool.latencyMs}`}
+              tool={tool}
+            />
           ))}
           {message.toolCalls?.some(
             (tool) =>
@@ -75,12 +106,6 @@ export function AssistantMessage({
             <Chip variant="success">Cancelamento confirmado</Chip>
           ) : null}
         </div>
-
-        {isError && onRetry ? (
-          <Button variant="secondary" className="w-auto" onClick={onRetry}>
-            Tentar novamente
-          </Button>
-        ) : null}
       </div>
     </div>
   );

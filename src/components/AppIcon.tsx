@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 import { cn } from "@/lib/utils";
 
 type AppIconProps = {
@@ -8,17 +6,16 @@ type AppIconProps = {
   className?: string;
 };
 
-function AppIconSvg({
-  size,
-  surface,
-  ink,
+export function AppIcon({
+  size = 96,
+  variant = "light",
   className,
-}: {
-  size: number;
-  surface: string;
-  ink: string;
-  className?: string;
-}) {
+}: AppIconProps) {
+  const isLight = variant === "light";
+  const surface = isLight ? "#FFFFFF" : "#4F46E5";
+  const ink = isLight ? "#4F46E5" : "#FFFFFF";
+  const radius = 96 * 0.27;
+
   return (
     <svg
       aria-hidden="true"
@@ -29,7 +26,7 @@ function AppIconSvg({
       xmlns="http://www.w3.org/2000/svg"
       className={cn("shrink-0", className)}
     >
-      <rect width="96" height="96" rx="26" fill={surface} />
+      <rect width="96" height="96" rx={radius} fill={surface} />
       <g
         transform="translate(22 20) scale(2.166)"
         stroke={ink}
@@ -42,34 +39,5 @@ function AppIconSvg({
         <path d="m9 10 2 2 4-4" />
       </g>
     </svg>
-  );
-}
-
-export function AppIcon({
-  size = 96,
-  variant = "light",
-  className,
-}: AppIconProps) {
-  if (variant === "light") {
-    return (
-      <Image
-        src="/assets/app-icon.png"
-        alt=""
-        width={size}
-        height={size}
-        priority
-        className={cn("shrink-0", className)}
-        aria-hidden="true"
-      />
-    );
-  }
-
-  return (
-    <AppIconSvg
-      size={size}
-      surface="#4F46E5"
-      ink="#FFFFFF"
-      className={className}
-    />
   );
 }

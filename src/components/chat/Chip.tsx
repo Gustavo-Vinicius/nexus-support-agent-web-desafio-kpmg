@@ -18,11 +18,11 @@ export type ChipVariant =
   | "danger";
 
 const VARIANT_STYLES: Record<ChipVariant, string> = {
-  citation: "border-border bg-surface text-text-muted",
-  tool: "border-border bg-bg text-text-muted",
-  warning: "border-warning/30 bg-warning-soft text-warning",
-  success: "border-success/30 bg-success-soft text-success",
-  danger: "border-danger/30 bg-danger-soft text-danger",
+  citation: "border-transparent bg-[#EEF2FF] font-medium text-primary",
+  tool: "border-transparent bg-[#F2F4F7] font-normal text-text-muted",
+  warning: "border-transparent bg-[#FFFAEB] font-medium text-warning",
+  success: "border-transparent bg-[#ECFDF3] font-medium text-success",
+  danger: "border-transparent bg-[#FEF3F2] font-medium text-danger",
 };
 
 const VARIANT_ICONS: Record<ChipVariant, LucideIcon> = {
@@ -51,12 +51,12 @@ export function Chip({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
+        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs",
         VARIANT_STYLES[variant],
         className,
       )}
     >
-      {showIcon ? <Icon size={12} strokeWidth={2} aria-hidden="true" /> : null}
+      {showIcon ? <Icon size={13} strokeWidth={2} aria-hidden="true" /> : null}
       {children}
     </span>
   );

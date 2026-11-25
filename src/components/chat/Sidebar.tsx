@@ -59,7 +59,7 @@ export function Sidebar({
       >
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <AppIcon size={36} variant="light" />
+            <AppIcon size={36} variant="primary" />
             <div>
               <p className="text-sm font-semibold text-text">Nexus Commerce</p>
               <p className="text-xs text-text-muted">
