@@ -195,36 +195,36 @@ function ChatWorkspace({
   );
 }
 
+function readAuthSnapshot() {
+  const token = getStoredToken();
+  const sessionId = getStoredSessionId();
+  const storedUserId = getStoredUserId();
+  const user = token ? getUserByToken(token) : undefined;
+  const userId = storedUserId ?? user?.userId ?? null;
+
+  if (!token || !sessionId || !userId) {
+    return "";
+  }
+
+  return JSON.stringify({ token, sessionId, userId });
+}
+
 export default function ChatPage() {
-  const auth = useSyncExternalStore(
+  const authSnapshot = useSyncExternalStore(
     emptySubscribe,
-    () => {
-      const token = getStoredToken();
-      const sessionId = getStoredSessionId();
-      const storedUserId = getStoredUserId();
-      const user = token ? getUserByToken(token) : undefined;
-      const userId = storedUserId ?? user?.userId ?? null;
-
-      if (!token || !sessionId || !userId) {
-        return null;
-      }
-
-      return { token, sessionId, userId };
-    },
-    () => undefined,
+    readAuthSnapshot,
+    () => "",
   );
 
-  if (auth === undefined) {
-    return (
-      <main className="flex min-h-dvh items-center justify-center bg-bg">
-        <p className="text-sm text-text-muted">Carregando sessão…</p>
-      </main>
-    );
-  }
-
-  if (!auth) {
+  if (!authSnapshot) {
     return <RedirectHome />;
   }
+
+  const auth = JSON.parse(authSnapshot) as {
+    token: string;
+    sessionId: string;
+    userId: string;
+  };
 
   return (
     <ChatWorkspace
