@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { type KeyboardEvent,useCallback, useId, useState } from "react";
+import { type KeyboardEvent, useCallback, useId, useState } from "react";
 
 import { AppIcon } from "@/components/AppIcon";
 import { Button } from "@/components/Button";
@@ -65,36 +65,36 @@ export default function HomePage() {
   };
 
   return (
-    <main className="relative flex min-h-dvh flex-col overflow-hidden bg-primary">
+    <main className="relative min-h-screen overflow-hidden bg-primary">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-40 -right-40 size-[520px] rounded-full bg-white/[0.06]"
+        className="pointer-events-none absolute -top-[380px] -right-[480px] h-[1100px] w-[1100px] rounded-full bg-white/[0.06]"
       />
 
-      <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-5 px-4 py-16">
+      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center gap-5 px-4">
         <AppIcon size={96} variant="light" />
 
         <div className="space-y-2 text-center">
-          <h1 className="text-[40px] leading-tight font-bold text-white">
+          <h1 className="text-[40px] leading-[1.15] font-bold tracking-[-0.02em] text-white">
             Nexus Support Agent
           </h1>
-          <p className="text-sm text-white/80">
+          <p className="text-sm leading-5 text-white/80">
             Atendimento da Nexus Commerce com respostas fundamentadas
           </p>
         </div>
 
         <section
           aria-labelledby={`${groupId}-title`}
-          className="flex w-full max-w-[440px] flex-col gap-3.5 rounded-lg bg-surface p-6 max-[480px]:mx-4 max-[480px]:max-w-none"
+          className="flex w-full max-w-[440px] flex-col gap-3.5 rounded-lg bg-surface p-6 shadow-[0_8px_30px_rgba(15,23,42,0.08)] max-[480px]:max-w-none"
         >
           <div className="space-y-1">
             <h2
               id={`${groupId}-title`}
-              className="text-base font-semibold text-text"
+              className="text-base leading-6 font-semibold text-text"
             >
               Entrar como cliente
             </h2>
-            <p className="text-xs text-text-muted">
+            <p className="text-xs leading-4 text-text-muted">
               Autenticação simulada para a avaliação
             </p>
           </div>
@@ -118,13 +118,13 @@ export default function HomePage() {
 
           <Button onClick={startConversation}>Iniciar conversa</Button>
 
-          <p className="text-xs text-text-muted">
+          <p className="text-center text-xs leading-4 text-text-muted">
             A identidade vem do token, nunca do texto enviado ao modelo.
           </p>
         </section>
       </div>
 
-      <p className="absolute bottom-[50px] left-1/2 z-10 -translate-x-1/2 text-center text-xs text-white/60">
+      <p className="absolute bottom-[50px] left-1/2 z-10 -translate-x-1/2 text-center text-xs leading-4 text-white/60">
         versão 1.0 · ambiente de avaliação
       </p>
     </main>
