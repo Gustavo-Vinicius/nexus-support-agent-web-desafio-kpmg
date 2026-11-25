@@ -15,6 +15,7 @@ import { MessageList } from "@/components/chat/MessageList";
 import { Sidebar } from "@/components/chat/Sidebar";
 import { Routes } from "@/config/routes";
 import { useChat } from "@/hooks/useChat";
+import { useSessions } from "@/hooks/useSessions";
 import {
   getStoredSessionId,
   getStoredToken,
@@ -25,7 +26,7 @@ import {
   persistSessionId,
 } from "@/lib/auth-session";
 import { getUserByToken } from "@/lib/mockUsers";
-import { loadSessions, truncateTitle } from "@/lib/session-storage";
+import { truncateTitle } from "@/lib/session-storage";
 import type { ChatSessionSummary } from "@/lib/types";
 
 const emptySubscribe = () => () => {};
@@ -51,12 +52,16 @@ function ChatSessionView({
   sessions,
   modelOnline,
   sidebarOpen,
+  serverWarning,
   onSessionsChange,
   onModelAvailabilityChange,
   onOpenSidebar,
   onCloseSidebar,
   onNewConversation,
   onSelectSession,
+  onRemoveSession,
+  onClearSessions,
+  onDismissWarning,
   onSwitchUser,
 }: {
   token: string;
@@ -65,12 +70,16 @@ function ChatSessionView({
   sessions: ChatSessionSummary[];
   modelOnline: boolean;
   sidebarOpen: boolean;
+  serverWarning: string | null;
   onSessionsChange: (sessions: ChatSessionSummary[]) => void;
   onModelAvailabilityChange: (online: boolean) => void;
   onOpenSidebar: () => void;
   onCloseSidebar: () => void;
   onNewConversation: () => void;
   onSelectSession: (sessionId: string) => void;
+  onRemoveSession: (sessionId: string) => void | Promise<void>;
+  onClearSessions: () => void | Promise<void>;
+  onDismissWarning: () => void;
   onSwitchUser: () => void;
 }) {
   const { messages, isLoading, send, confirm, retry } = useChat({
@@ -100,9 +109,13 @@ function ChatSessionView({
         sessions={sessions}
         activeSessionId={sessionId}
         open={sidebarOpen}
+        serverWarning={serverWarning}
         onClose={onCloseSidebar}
         onNewConversation={onNewConversation}
         onSelectSession={onSelectSession}
+        onRemoveSession={onRemoveSession}
+        onClearSessions={onClearSessions}
+        onDismissWarning={onDismissWarning}
         onSwitchUser={onSwitchUser}
       />
 
@@ -140,28 +153,44 @@ function ChatWorkspace({
 }) {
   const router = useRouter();
   const [sessionId, setSessionId] = useState(initialSessionId);
-  const [sessions, setSessions] = useState<ChatSessionSummary[]>(() =>
-    loadSessions(userId),
-  );
   const [modelOnline, setModelOnline] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const {
+    list: sessions,
+    remove,
+    clear,
+    replace,
+    serverWarning,
+    dismissWarning,
+  } = useSessions(userId);
 
-  const handleSessionsChange = useCallback((next: ChatSessionSummary[]) => {
-    setSessions(next);
-  }, []);
-
-  const handleNewConversation = () => {
+  const handleNewConversation = useCallback(() => {
     const next = crypto.randomUUID();
     persistSessionId(next);
     setSessionId(next);
     setSidebarOpen(false);
-  };
+  }, []);
 
   const handleSelectSession = (nextSessionId: string) => {
     persistSessionId(nextSessionId);
     setSessionId(nextSessionId);
     setSidebarOpen(false);
   };
+
+  const handleRemoveSession = useCallback(
+    async (targetSessionId: string) => {
+      await remove(targetSessionId);
+      if (targetSessionId === sessionId) {
+        handleNewConversation();
+      }
+    },
+    [handleNewConversation, remove, sessionId],
+  );
+
+  const handleClearSessions = useCallback(async () => {
+    await clear();
+    handleNewConversation();
+  }, [clear, handleNewConversation]);
 
   const handleSwitchUser = () => {
     clearAuthSession();
@@ -177,12 +206,16 @@ function ChatWorkspace({
       sessions={sessions}
       modelOnline={modelOnline}
       sidebarOpen={sidebarOpen}
-      onSessionsChange={handleSessionsChange}
+      serverWarning={serverWarning}
+      onSessionsChange={replace}
       onModelAvailabilityChange={setModelOnline}
       onOpenSidebar={() => setSidebarOpen(true)}
       onCloseSidebar={() => setSidebarOpen(false)}
       onNewConversation={handleNewConversation}
       onSelectSession={handleSelectSession}
+      onRemoveSession={handleRemoveSession}
+      onClearSessions={handleClearSessions}
+      onDismissWarning={dismissWarning}
       onSwitchUser={handleSwitchUser}
     />
   );

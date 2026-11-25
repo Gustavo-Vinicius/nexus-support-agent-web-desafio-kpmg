@@ -91,3 +91,34 @@ export function truncateTitle(text: string, max = 32) {
   }
   return `${normalized.slice(0, max - 1)}…`;
 }
+
+/** Remove histórico e entrada da lista local (try/catch). */
+export function removeSession(
+  userId: string,
+  sessionId: string,
+): ChatSessionSummary[] {
+  try {
+    sessionStorage.removeItem(messagesKey(userId, sessionId));
+    const next = loadSessions(userId).filter(
+      (session) => session.sessionId !== sessionId,
+    );
+    saveSessions(userId, next);
+    return next;
+  } catch {
+    return loadSessions(userId);
+  }
+}
+
+/** Remove todos os históricos e zera a lista local (try/catch). */
+export function clearSessions(userId: string): ChatSessionSummary[] {
+  try {
+    const sessions = loadSessions(userId);
+    for (const session of sessions) {
+      sessionStorage.removeItem(messagesKey(userId, session.sessionId));
+    }
+    saveSessions(userId, []);
+    return [];
+  } catch {
+    return loadSessions(userId);
+  }
+}
