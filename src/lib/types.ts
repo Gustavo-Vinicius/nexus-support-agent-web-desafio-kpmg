@@ -9,7 +9,13 @@ export type ToolCall = {
   status: "ok" | "error" | "pending";
 };
 
-export type OrderStatus = "delayed" | "shipped" | "delivered" | "canceled";
+export type OrderStatus =
+  | "processing"
+  | "shipped"
+  | "delayed"
+  | "delivered"
+  | "canceled"
+  | "cancelled";
 
 export type Order = {
   id: string;
@@ -17,6 +23,7 @@ export type Order = {
   estimatedDelivery: string;
   total: number;
   canCancel: boolean;
+  customerId?: string;
 };
 
 export type PendingAction = {
@@ -28,15 +35,16 @@ export type ChatSuccessResponse = {
   reply: string;
   citations: Citation[];
   toolCalls: ToolCall[];
-  order?: Order;
+  orders: Order[];
   pendingAction?: PendingAction;
   correlationId: string;
+  threadId?: string;
 };
 
 export type ChatErrorResponse = {
   error: string;
   message: string;
-  correlationId: string;
+  correlationId?: string;
 };
 
 export type ChatRequest = {
@@ -54,7 +62,7 @@ export type ChatMessage = {
   createdAt: string;
   citations?: Citation[];
   toolCalls?: ToolCall[];
-  order?: Order;
+  orders?: Order[];
   pendingAction?: PendingAction;
   confirmationResolved?: boolean | null;
   errorCode?: string;

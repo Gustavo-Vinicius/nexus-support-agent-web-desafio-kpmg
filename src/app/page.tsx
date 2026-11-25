@@ -7,7 +7,7 @@ import { AppIcon } from "@/components/AppIcon";
 import { Button } from "@/components/Button";
 import { CustomerOption } from "@/components/CustomerOption";
 import { Routes } from "@/config/routes";
-import { StorageKey } from "@/enum/storage-key.enum";
+import { persistAuthSession } from "@/lib/auth-session";
 import { MOCK_USERS } from "@/lib/mockUsers";
 
 export default function HomePage() {
@@ -33,13 +33,11 @@ export default function HomePage() {
       return;
     }
 
-    try {
-      sessionStorage.setItem(StorageKey.ACCESS_TOKEN, selected.token);
-      sessionStorage.setItem(StorageKey.USER_ID, selected.userId);
-      sessionStorage.setItem(StorageKey.SESSION_ID, crypto.randomUUID());
-    } catch {
-      // sessionStorage pode falhar em modo privado / restrições do browser
-    }
+    persistAuthSession({
+      token: selected.token,
+      userId: selected.userId,
+      sessionId: crypto.randomUUID(),
+    });
 
     router.push(Routes.chat);
   }, [router, selectedUserId]);

@@ -4,16 +4,17 @@ export type MockUser = {
   summary: string;
 };
 
+/** Tokens alinhados à API (AUTH_TOKENS=customer-001:tok_a,customer-002:tok_b). */
 export const MOCK_USERS: MockUser[] = [
   {
     userId: "customer-001",
-    token: "token-001",
+    token: "tok_a",
     summary: "2 pedidos · 12345 atrasado",
   },
   {
     userId: "customer-002",
-    token: "token-002",
-    summary: "1 pedido · 22222 enviado",
+    token: "tok_b",
+    summary: "1 pedido · 99999 em processamento",
   },
 ];
 

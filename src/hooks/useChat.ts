@@ -104,7 +104,7 @@ export function useChat({
           content: response.reply,
           citations: response.citations,
           toolCalls: response.toolCalls,
-          order: response.order,
+          orders: response.orders,
           pendingAction: response.pendingAction,
           confirmationResolved: response.pendingAction ? null : undefined,
           correlationId: response.correlationId,
@@ -124,7 +124,10 @@ export function useChat({
                 "local",
               );
 
-        if (apiError.status === 503 || apiError.error === "LLM_UNAVAILABLE") {
+        if (
+          apiError.status === 503 ||
+          apiError.error.toLowerCase().includes("llm_unavailable")
+        ) {
           onModelAvailabilityChange?.(false);
         }
 
@@ -172,7 +175,15 @@ export function useChat({
       persist(marked);
 
       try {
-        const response = await postChat({ sessionId, confirm: value }, token);
+        // API real confirma via mensagem "sim"/"não" (interrupt LangGraph)
+        const response = await postChat(
+          {
+            sessionId,
+            confirm: value,
+            message: value ? "sim" : "não",
+          },
+          token,
+        );
         onModelAvailabilityChange?.(true);
 
         const assistantMessage = createMessage({
@@ -180,6 +191,7 @@ export function useChat({
           content: response.reply,
           citations: response.citations,
           toolCalls: response.toolCalls,
+          orders: response.orders,
           correlationId: response.correlationId,
         });
 
@@ -197,7 +209,10 @@ export function useChat({
                 "local",
               );
 
-        if (apiError.status === 503 || apiError.error === "LLM_UNAVAILABLE") {
+        if (
+          apiError.status === 503 ||
+          apiError.error.toLowerCase().includes("llm_unavailable")
+        ) {
           onModelAvailabilityChange?.(false);
         }
 

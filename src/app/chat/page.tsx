@@ -14,13 +14,16 @@ import { Composer } from "@/components/chat/Composer";
 import { MessageList } from "@/components/chat/MessageList";
 import { Sidebar } from "@/components/chat/Sidebar";
 import { Routes } from "@/config/routes";
-import { StorageKey } from "@/enum/storage-key.enum";
 import { useChat } from "@/hooks/useChat";
 import {
   getStoredSessionId,
   getStoredToken,
   getStoredUserId,
 } from "@/lib/api";
+import {
+  clearAuthSession,
+  persistSessionId,
+} from "@/lib/auth-session";
 import { getUserByToken } from "@/lib/mockUsers";
 import { loadSessions, truncateTitle } from "@/lib/session-storage";
 import type { ChatSessionSummary } from "@/lib/types";
@@ -147,33 +150,21 @@ function ChatWorkspace({
     setSessions(next);
   }, []);
 
-  const persistSessionId = (next: string) => {
-    try {
-      sessionStorage.setItem(StorageKey.SESSION_ID, next);
-    } catch {
-      // ignore
-    }
-    setSessionId(next);
-  };
-
   const handleNewConversation = () => {
-    persistSessionId(crypto.randomUUID());
+    const next = crypto.randomUUID();
+    persistSessionId(next);
+    setSessionId(next);
     setSidebarOpen(false);
   };
 
   const handleSelectSession = (nextSessionId: string) => {
     persistSessionId(nextSessionId);
+    setSessionId(nextSessionId);
     setSidebarOpen(false);
   };
 
   const handleSwitchUser = () => {
-    try {
-      sessionStorage.removeItem(StorageKey.ACCESS_TOKEN);
-      sessionStorage.removeItem(StorageKey.USER_ID);
-      sessionStorage.removeItem(StorageKey.SESSION_ID);
-    } catch {
-      // ignore
-    }
+    clearAuthSession();
     router.replace(Routes.home);
   };
 

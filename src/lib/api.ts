@@ -1,10 +1,16 @@
 import { StorageKey } from "@/enum/storage-key.enum";
+import { ApiError } from "@/errors/api-error";
 import { MockApiError, mockChat } from "@/lib/mockApi";
 import type {
   ChatErrorResponse,
   ChatRequest,
   ChatSuccessResponse,
+  Order,
 } from "@/lib/types";
+import { postChatSend } from "@/services/chat/chat.send.service";
+import type { ChatSendResponse } from "@/services/chat/types";
+import { getOrderById } from "@/services/orders/order.get.service";
+import type { ApiOrder } from "@/services/orders/types";
 
 export function getApiBaseUrl(): string {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/+$/, "");
@@ -44,36 +50,6 @@ export function getStoredUserId(): string | null {
   }
 }
 
-/**
- * Helper HTTP: identidade via Authorization Bearer do token salvo.
- * O userId nunca deve ir no corpo como fonte de identidade.
- */
-export async function apiFetch(
-  path: string,
-  init: RequestInit = {},
-): Promise<Response> {
-  const token = getStoredToken();
-  const headers = new Headers(init.headers);
-
-  headers.set("Accept", "application/json");
-
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
-
-  if (init.body && !headers.has("Content-Type")) {
-    headers.set("Content-Type", "application/json");
-  }
-
-  const baseUrl = getApiBaseUrl();
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-
-  return fetch(`${baseUrl}${normalizedPath}`, {
-    ...init,
-    headers,
-  });
-}
-
 export class ChatApiError extends Error {
   constructor(
     public readonly status: number,
@@ -86,17 +62,81 @@ export class ChatApiError extends Error {
   }
 }
 
-export async function postChat(
-  body: ChatRequest,
-  token = getStoredToken(),
-): Promise<ChatSuccessResponse> {
-  if (!token) {
-    throw new ChatApiError(401, "UNAUTHORIZED", "Não autenticado.", "local");
+function mapApiOrder(order: ApiOrder): Order {
+  return {
+    id: order.id,
+    status: order.status,
+    estimatedDelivery: order.estimatedDelivery,
+    total: order.total,
+    canCancel: order.canCancel,
+    customerId: order.customerId,
+  };
+}
+
+function extractOrderIds(text: string): string[] {
+  const matches = text.matchAll(/\b(\d{4,})\b/g);
+  return [...new Set([...matches].map((match) => match[1]))];
+}
+
+async function maybeLoadOrders(orderIds: string[]) {
+  if (orderIds.length === 0) {
+    return [] as Order[];
   }
 
+  const results = await Promise.all(
+    orderIds.map(async (orderId) => {
+      try {
+        return mapApiOrder(await getOrderById(orderId));
+      } catch {
+        return null;
+      }
+    }),
+  );
+
+  return results.filter((order): order is Order => order != null);
+}
+
+function mapChatSendResponse(
+  data: ChatSendResponse,
+  orders: Order[],
+): ChatSuccessResponse {
+  const pending = data.awaitingConfirmation
+    ? {
+        type: "confirm_cancellation" as const,
+        orderId: data.awaitingConfirmation.orderId,
+      }
+    : undefined;
+
+  return {
+    reply: data.reply,
+    threadId: data.threadId,
+    correlationId: data.threadId,
+    citations: [],
+    toolCalls: pending
+      ? [
+          {
+            name: "request_cancellation",
+            latencyMs: 0,
+            status: "pending",
+          },
+        ]
+      : [],
+    pendingAction: pending,
+    orders,
+  };
+}
+
+/**
+ * Cliente unificado do chat.
+ * Identidade via Bearer (cookie → proxy). O userId nunca vai no corpo.
+ */
+export async function postChat(
+  body: ChatRequest,
+  _token = getStoredToken(),
+): Promise<ChatSuccessResponse> {
   if (isMockEnabled()) {
     try {
-      return await mockChat(token, body);
+      return await mockChat(_token ?? "", body);
     } catch (error) {
       if (error instanceof MockApiError) {
         throw new ChatApiError(
@@ -115,17 +155,46 @@ export async function postChat(
     }
   }
 
-  let response: Response;
+  const message =
+    body.message ??
+    (body.confirm === true ? "sim" : body.confirm === false ? "não" : "");
+
+  if (!message.trim()) {
+    throw new ChatApiError(
+      400,
+      "invalid_body",
+      "Mensagem obrigatória para o chat.",
+      "local",
+    );
+  }
 
   try {
-    response = await apiFetch("/chat", {
-      method: "POST",
-      body: JSON.stringify(body),
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+    const data = await postChatSend({
+      sessionId: body.sessionId,
+      message,
     });
-  } catch {
+
+    const orderIds = [
+      ...(data.awaitingConfirmation?.orderId
+        ? [data.awaitingConfirmation.orderId]
+        : []),
+      ...extractOrderIds(data.reply),
+    ];
+    const orders = await maybeLoadOrders([...new Set(orderIds)]);
+
+    return mapChatSendResponse(data, orders);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      const details = error.details as ChatErrorResponse | undefined;
+      throw new ChatApiError(
+        error.status,
+        details?.error ??
+          (error.status === 503 ? "llm_unavailable" : "REQUEST_FAILED"),
+        error.message,
+        details?.correlationId ?? "unknown",
+      );
+    }
+
     throw new ChatApiError(
       0,
       "NETWORK_ERROR",
@@ -133,25 +202,4 @@ export async function postChat(
       "local",
     );
   }
-
-  let payload: unknown;
-
-  try {
-    payload = await response.json();
-  } catch {
-    payload = undefined;
-  }
-
-  if (!response.ok) {
-    const errorBody = payload as ChatErrorResponse | undefined;
-    throw new ChatApiError(
-      response.status,
-      errorBody?.error ??
-        (response.status === 503 ? "LLM_UNAVAILABLE" : "REQUEST_FAILED"),
-      errorBody?.message ?? "Não foi possível obter resposta do assistente.",
-      errorBody?.correlationId ?? "unknown",
-    );
-  }
-
-  return payload as ChatSuccessResponse;
 }

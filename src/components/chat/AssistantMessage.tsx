@@ -1,8 +1,9 @@
 import { AppIcon } from "@/components/AppIcon";
 import { Button } from "@/components/Button";
+import { AssistantMarkdown } from "@/components/chat/AssistantMarkdown";
 import { Chip } from "@/components/chat/Chip";
 import { ConfirmationCard } from "@/components/chat/ConfirmationCard";
-import { OrderCard } from "@/components/chat/OrderCard";
+import { OrderCards } from "@/components/chat/OrderCard";
 import type { ChatMessage, ToolCall } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -41,21 +42,27 @@ export function AssistantMessage({
   onRetry,
   confirming,
 }: AssistantMessageProps) {
+  const orders = message.orders ?? [];
+
   return (
     <div className="flex items-start gap-3">
       <AppIcon size={32} variant="primary" />
       <div className="min-w-0 max-w-[620px] flex-1 space-y-2">
         <div
           className={cn(
-            "rounded-lg rounded-tl-sm border px-4 py-3.5 text-sm leading-[150%] whitespace-pre-wrap text-text",
+            "rounded-lg rounded-tl-sm border px-4 py-3.5 text-sm leading-[150%] text-text",
             isError
-              ? "border-danger bg-danger-soft"
+              ? "border-danger bg-danger-soft whitespace-pre-wrap"
               : "border-border bg-surface",
           )}
         >
-          {message.content}
+          {isError ? (
+            message.content
+          ) : (
+            <AssistantMarkdown content={message.content} />
+          )}
 
-          {message.order ? <OrderCard order={message.order} /> : null}
+          <OrderCards orders={orders} />
 
           {message.pendingAction ? (
             <ConfirmationCard

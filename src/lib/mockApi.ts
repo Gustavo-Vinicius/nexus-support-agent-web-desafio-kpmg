@@ -1,4 +1,4 @@
-import { getMockOrder } from "@/lib/mockOrders";
+import { getMockOrder, getMockOrdersByCustomer } from "@/lib/mockOrders";
 import type {
   ChatRequest,
   ChatSuccessResponse,
@@ -40,7 +40,7 @@ function ok(partial: {
   reply: string;
   citations?: Citation[];
   toolCalls?: ToolCall[];
-  order?: Order;
+  orders?: Order[];
   pendingAction?: PendingAction;
   correlationId?: string;
 }): ChatSuccessResponse {
@@ -48,7 +48,7 @@ function ok(partial: {
     reply: partial.reply,
     citations: partial.citations ?? [],
     toolCalls: partial.toolCalls ?? [],
-    order: partial.order,
+    orders: partial.orders ?? [],
     pendingAction: partial.pendingAction,
     correlationId: partial.correlationId ?? correlationId(),
   };
@@ -79,10 +79,17 @@ export async function mockChat(
   await delay(randomLatency());
 
   const ctx = getContext(body.sessionId);
-  const isCustomer001 = token === "token-001";
-  const isCustomer002 = token === "token-002";
+  const isCustomer001 = token === "tok_a" || token === "token-001";
+  const isCustomer002 = token === "tok_b" || token === "token-002";
 
-  if (body.confirm === true) {
+  const message = (body.message ?? "").toLowerCase().trim();
+  const confirmed =
+    body.confirm === true ||
+    /^(sim|yes|confirmo|confirmar)\b|^[sy]$/i.test(message);
+  const declined =
+    body.confirm === false || /^(n[aã]o|no)\b|^n$/i.test(message);
+
+  if (confirmed && (body.confirm !== undefined || message.length <= 10)) {
     return ok({
       reply: "Solicitação registrada. Protocolo CAN-2026-0042.",
       toolCalls: [
@@ -95,13 +102,11 @@ export async function mockChat(
     });
   }
 
-  if (body.confirm === false) {
+  if (declined && (body.confirm !== undefined || message.length <= 10)) {
     return ok({
       reply: "Tudo certo, o pedido 12345 foi mantido.",
     });
   }
-
-  const message = (body.message ?? "").toLowerCase();
 
   if (message.includes("erro503")) {
     throw new MockApiError(503, {
@@ -114,11 +119,33 @@ export async function mockChat(
   if (message.includes("devolução") || message.includes("devolucao")) {
     return ok({
       reply:
-        "Para eletrônicos, a devolução pode ser solicitada em até 7 dias corridos após o recebimento, desde que o produto esteja lacrado e com a nota fiscal. Após a aprovação, o reembolso é processado em até 10 dias úteis.",
+        "Para eletrônicos, a devolução pode ser solicitada em até **7 dias corridos** após o recebimento, desde que o produto esteja lacrado e com a nota fiscal. Após a aprovação, o reembolso é processado em até **10 dias úteis**.",
       citations: [{ source: "devolucao.md", section: "Eletrônicos" }],
       toolCalls: [
         { name: "search_knowledge", latencyMs: 240, status: "ok" },
       ],
+    });
+  }
+
+  if (
+    /(list[ae]|meus pedidos|quantos pedidos|quais.*pedidos|pra mim os pedidos)/i.test(
+      message,
+    )
+  ) {
+    const customerId = isCustomer002 ? "customer-002" : "customer-001";
+    const orders = getMockOrdersByCustomer(customerId);
+    if (orders[0]) {
+      ctx.lastOrder = orders[0];
+    }
+
+    const lines = orders
+      .map((order) => `- **#${order.id}** — status \`${order.status}\``)
+      .join("\n");
+
+    return ok({
+      reply: `Você tem **${orders.length} pedido(s)** nesta conta:\n\n${lines}`,
+      orders,
+      toolCalls: [{ name: "list_my_orders", latencyMs: 210, status: "ok" }],
     });
   }
 
@@ -158,29 +185,29 @@ export async function mockChat(
       "pt-BR",
     );
     return ok({
-      reply: `A previsão de entrega do pedido #${order.id} é ${date}.`,
-      order,
+      reply: `A previsão de entrega do pedido **#${order.id}** é ${date}.`,
+      orders: [order],
       toolCalls: [{ name: "get_order", latencyMs: 190, status: "ok" }],
     });
   }
 
-  if (message.includes("22222")) {
+  if (message.includes("99999") || message.includes("22222")) {
     if (isCustomer001) {
       return ok({
         reply:
-          "Não encontrei o pedido 22222 entre os seus pedidos. Verifique o número ou tente outro pedido vinculado à sua conta.",
+          "Não encontrei esse pedido entre os seus pedidos. Verifique o número ou tente outro pedido vinculado à sua conta.",
         toolCalls: [{ name: "get_order", latencyMs: 170, status: "error" }],
       });
     }
 
     if (isCustomer002) {
-      const order = getMockOrder("22222");
+      const order = getMockOrder("99999");
       if (order) {
         ctx.lastOrder = order;
       }
       return ok({
-        reply: "O pedido #22222 foi enviado e está a caminho.",
-        order,
+        reply: "O pedido **#99999** está em processamento.",
+        orders: order ? [order] : [],
         toolCalls: [{ name: "get_order", latencyMs: 200, status: "ok" }],
       });
     }
@@ -202,8 +229,8 @@ export async function mockChat(
 
     return ok({
       reply:
-        "O pedido #12345 está atrasado em relação à previsão original. Você ainda pode solicitar o cancelamento enquanto o status permitir.",
-      order,
+        "O pedido **#12345** está atrasado em relação à previsão original. Você ainda pode solicitar o cancelamento enquanto o status permitir.",
+      orders: order ? [order] : [],
       toolCalls: [{ name: "get_order", latencyMs: 220, status: "ok" }],
     });
   }
