@@ -32,8 +32,8 @@ export function CustomerOption({
       <span
         aria-hidden="true"
         className={cn(
-          "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border",
-          selected ? "border-primary bg-primary" : "border-border bg-surface",
+          "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border-[1.5px]",
+          selected ? "border-primary bg-primary" : "border-[#D0D5DD] bg-surface",
         )}
       >
         {selected ? (
@@ -42,13 +42,12 @@ export function CustomerOption({
       </span>
 
       <span className="min-w-0 flex-1 space-y-0.5">
-        <span className="block text-sm font-semibold text-text">
-          {user.userId}{" "}
-          <span className="font-normal text-text-muted">
-            · Bearer {user.token}
-          </span>
+        <span className="block text-sm font-semibold leading-5 text-text">
+          {user.userId} · Bearer {user.token}
         </span>
-        <span className="block text-xs text-text-muted">{user.summary}</span>
+        <span className="block text-xs leading-4 text-text-muted">
+          {user.summary}
+        </span>
       </span>
     </button>
   );

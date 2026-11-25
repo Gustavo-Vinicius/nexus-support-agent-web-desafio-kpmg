@@ -22,7 +22,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="pt-BR"
       className={cn(inter.variable, "h-full antialiased font-sans")}
     >
-      <body className="flex h-full min-h-0 flex-col">{children}</body>
+      <body
+        className="flex h-full min-h-0 flex-col"
+        suppressHydrationWarning
+      >
+        {children}
+      </body>
     </html>
   );
 }

@@ -7,14 +7,14 @@ export default function LoginPage() {
         <h1 className="text-2xl font-semibold tracking-tight text-text">
           Nexus Support Agent
         </h1>
-        <p className="text-sm text-text-2">
-          Área de autenticação pronta. Próximo passo: formulário de login.
+        <p className="text-sm text-text-muted">
+          Use a tela inicial para entrar com um cliente simulado.
         </p>
         <a
-          href={Routes.dashboard}
-          className="inline-flex h-11 items-center justify-center rounded-[var(--radius-control)] bg-accent px-5 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+          href={Routes.home}
+          className="inline-flex h-11 items-center justify-center rounded-sm bg-primary px-5 text-sm font-medium text-white transition-colors hover:bg-[#4338CA]"
         >
-          Ir para o dashboard
+          Ir para a abertura
         </a>
       </div>
     </div>
