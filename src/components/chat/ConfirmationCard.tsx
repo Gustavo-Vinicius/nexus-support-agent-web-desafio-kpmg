@@ -29,7 +29,7 @@ export function ConfirmationCard({
       </p>
 
       {isResolved ? (
-        <p className="mt-3 text-sm font-medium text-text">
+        <p className="mt-3 text-sm font-medium text-text" aria-live="polite">
           {resolved
             ? "Você confirmou o cancelamento."
             : "Você optou por manter o pedido."}
@@ -40,6 +40,7 @@ export function ConfirmationCard({
             className="w-full sm:w-auto"
             disabled={disabled}
             onClick={onConfirm}
+            aria-label={`Confirmar cancelamento do pedido ${action.orderId}`}
           >
             Confirmar cancelamento
           </Button>
@@ -48,6 +49,7 @@ export function ConfirmationCard({
             className="w-full sm:w-auto"
             disabled={disabled}
             onClick={onKeep}
+            aria-label={`Manter o pedido ${action.orderId}`}
           >
             Manter pedido
           </Button>

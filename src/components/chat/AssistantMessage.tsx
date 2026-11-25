@@ -68,6 +68,12 @@ export function AssistantMessage({
               {tool.name} · {tool.latencyMs} ms
             </Chip>
           ))}
+          {message.toolCalls?.some(
+            (tool) =>
+              tool.name === "confirm_cancellation" && tool.status === "ok",
+          ) ? (
+            <Chip variant="success">Cancelamento confirmado</Chip>
+          ) : null}
         </div>
 
         {isError && onRetry ? (
