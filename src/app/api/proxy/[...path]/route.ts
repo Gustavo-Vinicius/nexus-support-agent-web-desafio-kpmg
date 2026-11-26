@@ -168,6 +168,18 @@ async function handler(
   headers.delete("content-encoding");
   headers.delete("content-length");
 
+  // 204/205/304 não podem ter body no Response do Fetch
+  if (
+    response.status === 204 ||
+    response.status === 205 ||
+    response.status === 304
+  ) {
+    return new Response(null, {
+      status: response.status,
+      headers,
+    });
+  }
+
   return new Response(raw, {
     status: response.status,
     headers,
