@@ -1,9 +1,0 @@
-import type { ReactNode } from "react";
-
-export default function AuthLayout({ children }: { children: ReactNode }) {
-  return (
-    <div className="flex h-dvh max-h-dvh w-full overflow-hidden bg-surface">
-      {children}
-    </div>
-  );
-}
