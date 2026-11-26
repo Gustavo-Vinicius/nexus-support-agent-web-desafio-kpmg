@@ -9,12 +9,12 @@ export const MOCK_USERS: MockUser[] = [
   {
     userId: "customer-001",
     token: "tok_a",
-    summary: "2 pedidos · 12345 atrasado",
+    summary: "9 pedidos · 12345 atrasado",
   },
   {
     userId: "customer-002",
     token: "tok_b",
-    summary: "1 pedido · 99999 em processamento",
+    summary: "8 pedidos · 99999 em processamento",
   },
 ];
 

@@ -15,7 +15,9 @@ export type OrderStatus =
   | "delayed"
   | "delivered"
   | "canceled"
-  | "cancelled";
+  | "cancelled"
+  | "returned"
+  | "pending_payment";
 
 export type Order = {
   id: string;
