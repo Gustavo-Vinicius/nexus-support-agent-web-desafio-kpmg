@@ -20,6 +20,10 @@ Interface web do **Nexus Support Agent**: chat de atendimento ao cliente da Nexu
 
 ![Fluxo de confirmação de cancelamento](docs/screenshots/04-confirmacao-cancelamento.png)
 
+### Política de devolução (RAG)
+
+![Resposta com fonte da base de conhecimento](docs/screenshots/05-politica-devolucao.png)
+
 ## Stack
 
 - **Next.js 16** (App Router) + **React 19** + **TypeScript**
