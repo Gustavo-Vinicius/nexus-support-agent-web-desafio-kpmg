@@ -1,36 +1,122 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nexus Support Agent — Frontend
 
-## Getting Started
+Interface web do **Nexus Support Agent**: chat de atendimento ao cliente da Nexus Commerce, com respostas fundamentadas em pedidos e base de conhecimento.
 
-First, run the development server:
+## Screenshots
+
+### Abertura — seleção de cliente
+
+![Tela de abertura com autenticação simulada](docs/screenshots/01-abertura.png)
+
+### Chat — estado inicial
+
+![Chat com sugestões de perguntas](docs/screenshots/02-chat-inicial.png)
+
+### Consulta de pedido
+
+![Resposta com card do pedido 12345](docs/screenshots/03-consulta-pedido.png)
+
+### Confirmação de cancelamento
+
+![Fluxo de confirmação de cancelamento](docs/screenshots/04-confirmacao-cancelamento.png)
+
+## Stack
+
+- **Next.js 16** (App Router) + **React 19** + **TypeScript**
+- **Tailwind CSS 4**
+- **react-markdown** (respostas do assistente)
+- Proxy server-side em `/api/proxy` (evita CORS no browser)
+
+## Funcionalidades
+
+- Tela inicial com seleção de cliente simulado (`customer-001` / `customer-002`)
+- Chat com histórico de sessões (sidebar), nova conversa e exclusão de sessão
+- Renderização de Markdown, cards de pedido e chips de tools
+- Fluxo de confirmação de cancelamento de pedido
+- Modo **mock** local ou integração com a **API real**
+
+## Pré-requisitos
+
+- Node.js 20+
+- Yarn ou npm
+- API Nexus rodando (quando `NEXT_PUBLIC_USE_MOCK=false`)
+
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# instalar dependências
+yarn
+
+# configurar ambiente
+cp .env.example .env
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Edite o `.env`:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+# URL da API Nexus (não use a mesma porta do Next.js)
+# Ex.: API em 3333 e front em 3000
+NEXT_PUBLIC_API_URL=http://localhost:3333
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# true = mock local | false = API real via /api/proxy
+NEXT_PUBLIC_USE_MOCK=false
+```
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+yarn dev      # http://localhost:3000
+yarn build    # build de produção
+yarn start    # sobe o build
+yarn lint     # ESLint
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Como usar
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Abra `http://localhost:3000`
+2. Selecione um cliente simulado e inicie a conversa
+3. No chat, consulte pedidos, status e solicite cancelamento quando disponível
 
-## Deploy on Vercel
+Tokens alinhados à API:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Cliente        | Token  |
+|----------------|--------|
+| `customer-001` | `tok_a` |
+| `customer-002` | `tok_b` |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Estrutura
+
+```text
+src/
+├── app/                 # rotas (/, /chat) e proxy /api/proxy
+├── components/chat/     # UI do chat
+├── hooks/               # useChat, useSessions
+├── lib/                 # auth, mock, session storage, tipos
+├── services/            # chat, orders, sessions, http
+├── config/              # rotas e base path
+├── errors/              # erros de API
+└── styles/              # globals.css
+```
+
+## Modo mock vs API real
+
+| Variável | Comportamento |
+|----------|----------------|
+| `NEXT_PUBLIC_USE_MOCK=true` | Respostas e pedidos vêm de `src/lib/mockApi.ts` / `mockOrders.ts` |
+| `NEXT_PUBLIC_USE_MOCK=false` | O browser chama `/api/proxy/...`, que encaminha para `NEXT_PUBLIC_API_URL` |
+
+No modo real, a API precisa estar acessível na URL configurada. O front **não** deve compartilhar a porta da API.
+
+## Rotas
+
+| Rota | Descrição |
+|------|-----------|
+| `/` | Abertura — escolha do cliente |
+| `/chat` | Interface do chat |
+| `/api/proxy/[...path]` | Proxy autenticado para a API |
+
+## Observações
+
+- Sessão (token, userId, sessionId) fica em `sessionStorage`
+- O status “Modelo online / indisponível” no header reflete a disponibilidade do backend (ou mock)
+- Variáveis `NEXT_PUBLIC_*` são embutidas no build — altere o `.env` e reinicie o `yarn dev` após mudanças
