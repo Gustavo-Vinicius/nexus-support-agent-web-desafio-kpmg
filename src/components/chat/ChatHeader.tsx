@@ -47,7 +47,6 @@ export function ChatHeader({
         <Chip variant={modelOnline ? "success" : "danger"}>
           {modelOnline ? "Modelo online" : "Modelo indisponível"}
         </Chip>
-        <Chip variant="tool">3 ferramentas</Chip>
       </div>
     </header>
   );
