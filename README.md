@@ -4,25 +4,25 @@ Interface web do **Nexus Support Agent**: chat de atendimento ao cliente da Nexu
 
 ## Screenshots
 
-### Abertura seleção de cliente
+### Abertura — seleção de cliente
 
-![Tela de abertura com autenticação simulada](<img width="1318" height="911" alt="image" src="https://github.com/user-attachments/assets/68f13187-9a98-4c72-9ba3-bc0eb28c71e7" />)
+![Tela de abertura com autenticação simulada](docs/screenshots/01-abertura.jpg)
 
 ### Chat — estado inicial
 
-![Chat com sugestões de perguntas](<img width="1918" height="908" alt="image" src="https://github.com/user-attachments/assets/3513247f-74a2-4942-b1d4-fe04777c1834" />)
+![Chat com sugestões de perguntas](docs/screenshots/02-chat-inicial.jpg)
 
 ### Consulta de pedido
 
-![Resposta com card do pedido 12345](<img width="1916" height="909" alt="image" src="https://github.com/user-attachments/assets/e3968dfa-fcef-4c89-be6c-351b8e1bf92f" />)
+![Resposta com card do pedido 12345](docs/screenshots/03-consulta-pedido.jpg)
 
 ### Confirmação de cancelamento
 
-![Fluxo de confirmação de cancelamento](<img width="1913" height="909" alt="image" src="https://github.com/user-attachments/assets/77759bcf-c900-45b9-8b34-b0fcda0fe46a" />)
+![Fluxo de confirmação de cancelamento](docs/screenshots/04-confirmacao-cancelamento.jpg)
 
 ### Política de devolução (RAG)
 
-![Resposta com fonte da base de conhecimento](docs/screenshots/05-politica-devolucao.png)
+![Resposta com fonte da base de conhecimento](docs/screenshots/05-politica-devolucao.jpg)
 
 ## Stack
 
